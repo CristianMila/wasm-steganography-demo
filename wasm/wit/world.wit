@@ -1,0 +1,8 @@
+package local:steganography;
+
+world steganography {
+	import log: func(message: string);
+	export encode-secret-into-bmp: func(secret: string, image: list<u8>) -> list<u8>;
+	export decode-secret-from-bmp: func(image: list<u8>) -> string;
+}
+

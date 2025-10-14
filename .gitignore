@@ -38,4 +38,3 @@ obj/
 bin/
 dist/
 *.local.runsettings
-wasm/
