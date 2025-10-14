@@ -3,13 +3,6 @@ name: pipeline
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'wasm/'
-      - 'cli/'
-      - 'webtool/'
-      - '!webtool/README.md'
-      - 'webapi/'
-      - '.github/'
 
 env:
   ARTIFACTS: '${{ github.workspace }}/artifacts'
