@@ -1,0 +1,137 @@
+name: pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'wasm/'
+      - 'cli/'
+      - 'webtool/'
+      - '!webtool/README.md'
+      - 'webapi/'
+
+env:
+  ARTIFACTS: '${{ github.workspace }}/artifacts'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wasm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup cargo
+        uses: moonrepo/setup-rust@v1
+        with:
+          targets: wasm32-wasip1,x86_64-unknown-linux-gnu
+          bins: cargo-component
+      # - name: Clippy
+      #   run: cargo clippy
+      - name: Run tests
+        run: cargo test --test steganography_test --target x86_64-unknown-linux-gnu
+      - name: Build module
+        run: cargo build --target wasm32-wasip1 --release --target-dir ${{ env.ARTIFACTS }}/wasm-module
+      - name: Build component
+        run: cargo component build --release --target-dir ${{ env.ARTIFACTS }}/wasm-component
+      - name: Upload WASM module
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-module
+          path: ${{ env.ARTIFACTS }}/wasm-module/wasm32-wasip1/release/wasm_steganography.wasm
+      - name: Upload WASM component
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-component
+          path: ${{ env.ARTIFACTS }}/wasm-component/wasm32-wasip1/release/wasm_steganography.wasm
+  build-webtool:
+    runs-on: ubuntu-latest
+    needs: build-wasm
+    defaults:
+      run:
+        working-directory: ./webtool
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-component
+          path: ${{ env.ARTIFACTS }}/built-wasm-component
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.9.x'
+          cache: 'npm'
+          cache-dependency-path: webtool/package-lock.json
+      - name: Install deps
+        run: npm ci
+      - name: Transpile wasm
+        run: npx jco transpile --tla-compat --no-nodejs-compat ${{ env.ARTIFACTS }}/built-wasm-component/wasm_steganography.wasm -o ./src/bindings/
+      - name: run tests
+        run: npx ng test --no-watch --browsers=ChromeHeadless
+      - name: Build webtool
+        run: npx ng build -c production --base-href /$(basename $GITHUB_REPOSITORY)/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: webtool/dist/webtool/browser
+  publish-pages:
+    runs-on: ubuntu-latest
+    needs: build-webtool
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish on Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+  build-webapi:
+    runs-on: ubuntu-latest
+    needs: build-wasm
+    defaults:
+      run:
+        working-directory: ./webapi
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download WASM module
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-module
+          path: ${{ env.ARTIFACTS }}/built-wasm-module
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+      - name: Format
+        run: dotnet format --verify-no-changes
+      - name: Set env path to wasm module
+        run: echo "WASM_STEGANOGRAPHY_FILE_PATH=${{ env.ARTIFACTS }}/built-wasm-module/wasm_steganography.wasm" >> $GITHUB_ENV
+      - name: Run tests
+        run: dotnet test
+  build-cli:
+    runs-on: ubuntu-latest
+    needs: build-wasm
+    defaults:
+      run:
+        working-directory: ./cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-component
+          path: ${{ env.ARTIFACTS }}/built-wasm-component
+      - name: Set environment
+        run: echo "WASM_STEGANOGRAPHY_FILE_PATH=${{ env.ARTIFACTS }}/built-wasm-component/wasm_steganography.wasm" >> $GITHUB_ENV
+      - name: Clippy
+        run: cargo clippy --release -- -D warnings
+      - name: Run tests
+        run: cargo test --test cli --release
+      - name: Build
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-app
+          path: cli/target/x86_64-unknown-linux-gnu/release/cli
