@@ -9,6 +9,7 @@ on:
       - 'webtool/'
       - '!webtool/README.md'
       - 'webapi/'
+      - '.github/'
 
 env:
   ARTIFACTS: '${{ github.workspace }}/artifacts'
