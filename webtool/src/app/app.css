@@ -1,0 +1,52 @@
+.card {
+  width: min(700px, 90vw);
+  background-color: white;
+  border-radius: 10px;
+  border: solid 3px darkgray;
+  padding: 0.7rem;
+  display: flex;
+  justify-self: center;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-row {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+h2 {
+  text-align: center;
+  margin: 0.7rem 0;
+}
+
+p {
+  margin-top: 0;
+}
+
+input {
+  font-family: var(--font-family);
+}
+
+.img-select {
+  cursor: pointer;
+  width: min(700px, 90vw);
+}
+
+div.img-select {
+  height: 300px;
+  background-color: darkgray;
+}
+
+#plus {
+  margin-top: 30px;
+  font-size: 4.5rem;
+  color: white;
+  justify-self: center;
+  text-align: center;
+}
+
+#plus span {
+  font-size: 8rem;
+  display: block;
+}

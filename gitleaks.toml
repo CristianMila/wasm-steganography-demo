@@ -1,0 +1,5 @@
+[[rules]]
+id = "unc-path-leak"
+description = "UNC path detected, may expose internal network structure."
+regex = '''C:'''
+tags = ["unc", "filepath"]

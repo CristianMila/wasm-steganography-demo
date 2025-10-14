@@ -1,0 +1,116 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "webtool": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": "wasm_steganography.core.wasm",
+                "input": "src/bindings/",
+              },
+              {
+                "glob": "wasm_steganography.core2.wasm",
+                "input": "src/bindings/",
+              }
+            ],
+            "styles": [
+              "src/styles.css"
+            ],
+            "externalDependencies": [
+              "node:fs/promises"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "webtool:build:production"
+            },
+            "development": {
+              "buildTarget": "webtool:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/base"
+              },
+              {
+                "glob": "wasm_steganography.core.wasm",
+                "input": "src/bindings/",
+                "output": "/base"
+              },
+              {
+                "glob": "wasm_steganography.core2.wasm",
+                "input": "src/bindings/",
+                "output": "/base"
+              },
+              {
+                "glob": "*.bmp",
+                "input": "src/fixtures/",
+                "output": "/base/fixtures
+              },
+
+            ],
+            "styles": [
+              "src/styles.css"
+            ],
+            "externalDependencies": [
+              "node:fs/promises"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

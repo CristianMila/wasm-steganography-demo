@@ -1,0 +1,30 @@
+<div class="card">
+  <h2>STEGANOGRAPHY WASM DEMO</h2>
+  <p>Embeds and extracts text into and from an image.<br/>Only BMP 24bit color depth images are supported.<br/>It runs fully in the browser as a WebAssembly module, so neither images or secrets are sent anywhere. You can try this offline.</p>
+  <p><strong>DISCLAIMER:</strong><br/>
+  <strong>This is not a security tool</strong>, just an excuse to learn about WebAssembly.
+  Secrets are embedded into the picture using the LSB technique without any additional encryption.
+  </p>
+  @if (imageUrl() != null) {
+  <img class="img-select" [src]="imageUrl()" (click)="filePicker.click()"/>
+  } @else {
+  <div class="img-select" (click)="filePicker.click()">
+    <div id="plus">
+      <span>+</span>
+      Add image
+    </div>
+  </div>
+  }
+  <input hidden type="file" #filePicker (change)="onFileSelected($event)" accept=".bmp,image/bmp" />
+  <div class="card-row">
+    <input type="button" value="Decode" [disabled]="imageBytes === null" (click)="decode()"/>
+    <input id="decodedSecretInput" type="text" [value]="decodedSecret()" readonly/>
+  </div>
+  <div class="card-row">
+    <input id="encodeSecretInput" type="text" [(ngModel)]="secretToEncode"/>
+    <input type="button" value="Encode" (click)="encode()" [disabled]="secretToEncode == null" />
+  </div>
+  <div class="card-row">
+    <span>Time elapsed: {{ timeElapsedMs() | number: '1.2' }} ms</span>
+  </div>
+</div>
