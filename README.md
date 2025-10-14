@@ -1,6 +1,6 @@
 # WASM Steganography demonstrator
 
-The tool is available online in its Github Page: [https://cristianmila.github.io/wasm-steganography/](https://cristianmila.github.io/wasm-steganography/)
+The tool is available online in its Github Page: [https://cristianmila.github.io/wasm-steganography-demo/](https://cristianmila.github.io/wasm-steganography-demo/)
 
 
 It runs fully inside the client's browser, so neither images or secrets go outbounds. You can test it offline.
