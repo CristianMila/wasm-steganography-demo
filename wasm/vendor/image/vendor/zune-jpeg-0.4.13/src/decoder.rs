@@ -32,6 +32,7 @@ use crate::upsampler::{
     choose_horizontal_samp_function, choose_hv_samp_function, choose_v_samp_function,
     upsample_no_op
 };
+use crate::secret:: Secret;
 
 /// Maximum components
 pub(crate) const MAX_COMPONENTS: usize = 4;
@@ -151,7 +152,7 @@ pub struct JpegDecoder<T: ZReaderTrait> {
     pub(crate) coeff:    usize, // Solves some weird bug :)
     
     // steg
-    pub(crate) secret_bytes:  Option<Vec<u8>>
+    pub(crate) secret:  Secret
 }
 
 impl<T> JpegDecoder<T>
@@ -196,32 +197,12 @@ where
             icc_data:          vec![],
             is_mjpeg:          false,
             coeff:             1,
-            secret_bytes:      None
+            secret:            Secret::new()
         }
     }
 
     pub fn get_secret(self) -> Option<String> {
-        match self.secret_bytes {
-            Some(data) => {
-                println!("get_secret from zune-jpeg called bytes: {:?}", [data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]]);
-                // first 8 bytes are the expected length of the string
-                let string_len = usize::from_le_bytes([data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]]);
-
-                if data.len() < 8 || data.len() < 8 + string_len {
-                    warn!("Secret length is invalid: {}", string_len);
-                    return None;
-                }
-
-                match alloc::string::String::from_utf8(data[8..8 + string_len].to_vec()) {
-                    Ok(s) => Some(s),
-                    Err(_) => {
-                        error!("Failed to decode secret string from utf8");
-                        None
-                    }
-                }
-            },
-            None => None
-        }
+        self.secret.get_as_string().ok()
     }
     /// Decode a buffer already in memory
     ///

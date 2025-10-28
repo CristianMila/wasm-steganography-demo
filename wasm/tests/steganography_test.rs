@@ -1,7 +1,5 @@
-use image::ImageDecoder;
 use wasm_steganography::Steganography;
 use wasm_steganography::Guest;
-use image::codecs::jpeg::{JpegDecoder, JpegEncoder};
 use std::io::Cursor;
 
 const SECRET: &str = "foo";

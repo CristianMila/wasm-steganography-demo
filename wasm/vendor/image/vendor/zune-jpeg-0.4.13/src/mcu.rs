@@ -8,7 +8,6 @@
 
 use alloc::vec::Vec;
 use alloc::{format, vec};
-use alloc::collections::btree_map::BTreeMap;
 use core::cmp::min;
 
 use zune_core::bytestream::ZReaderTrait;
@@ -222,7 +221,6 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
     fn decode_mcu_width(
         &mut self, mcu_width: usize, tmp: &mut [i32; 64], stream: &mut BitStream
     ) -> Result<(), DecodeErrors> {
-        let mut secret: Vec<u8> = vec![];
         let mut secret_cb_plane: Vec<u8> = vec![];
         let mut secret_cr_plane: Vec<u8> = vec![];
 
@@ -258,30 +256,32 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                             &mut component.dc_pred
                         )?;
 
-                        match component.component_id {
-                            ComponentID::Cb => {
-                                let mut byte: u8 = 0;
-                                for bit_index in 0..8 {
-                                    let coeff_index = 63 - bit_index;
-                                    let coeff_value = quantized_block[coeff_index];
-                                    let lsb = (coeff_value & 1) as u8;
-                                    byte |= lsb << (7 - bit_index);
-                                }
+                        if !self.secret.is_complete() {
+                            match component.component_id {
+                                ComponentID::Cb => {
+                                    let mut byte: u8 = 0;
+                                    for bit_index in 0..8 {
+                                        let coeff_index = 63 - bit_index;
+                                        let coeff_value = quantized_block[coeff_index];
+                                        let lsb = (coeff_value & 1) as u8;
+                                        byte |= lsb << (7 - bit_index);
+                                    }
 
-                                secret_cb_plane.push(byte);
-                            }
-                            ComponentID::Cr => {
-                                let mut byte: u8 = 0;
-                                for bit_index in 0..8 {
-                                    let coeff_index = 63 - bit_index;
-                                    let coeff_value = quantized_block[coeff_index];
-                                    let lsb = (coeff_value & 1) as u8;
-                                    byte |= lsb << (7 - bit_index);
+                                    secret_cb_plane.push(byte);
                                 }
+                                ComponentID::Cr => {
+                                    let mut byte: u8 = 0;
+                                    for bit_index in 0..8 {
+                                        let coeff_index = 63 - bit_index;
+                                        let coeff_value = quantized_block[coeff_index];
+                                        let lsb = (coeff_value & 1) as u8;
+                                        byte |= lsb << (7 - bit_index);
+                                    }
 
-                                secret_cr_plane.push(byte);
+                                    secret_cr_plane.push(byte);
+                                }
+                                _ => {}
                             }
-                            _ => {}
                         }
 
                         if component.needed {
@@ -302,7 +302,6 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             }
 
             self.todo = self.todo.saturating_sub(1);
-
 
             // After all interleaved components, that's an MCU
             // handle stream markers
@@ -339,26 +338,17 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             }
         }
 
-        // interleave bytes from cb and cr, respecting the encoding order, that is, first cb
-        // then cr
-        let mut secret_cr_plane_iter = secret_cr_plane.iter();
-        for cb_byte in &secret_cb_plane {
-            secret.push(*cb_byte);
-            let Some(cr_byte) = secret_cr_plane_iter.next() else {
-                break;
-            };
+        if !self.secret.is_complete() {
+            let mut secret_cr_plane_iter = secret_cr_plane.iter();
+            for cb_byte in &secret_cb_plane {
+                let _ = self.secret.push_byte(*cb_byte);
+                let Some(cr_byte) = secret_cr_plane_iter.next() else {
+                    break;
+                };
 
-            secret.push(*cr_byte);
-        }
-
-        // several mcus are needed to decode a secret, so we store the bytes we got from this one
-        // to the secret property
-        match &mut self.secret_bytes {
-            Some(s) => s.extend(&secret),
-            None => {
-                self.secret_bytes = Some(secret.to_vec());
+                let _ = self.secret.push_byte(*cr_byte);
             }
-        };
+        }
 
         Ok(())
     }

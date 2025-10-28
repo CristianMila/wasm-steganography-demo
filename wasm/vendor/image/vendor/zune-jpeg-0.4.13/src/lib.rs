@@ -128,3 +128,4 @@ mod unsafe_utils_avx2;
 mod unsafe_utils_neon;
 mod upsampler;
 mod worker;
+mod secret;

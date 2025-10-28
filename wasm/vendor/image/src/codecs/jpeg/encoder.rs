@@ -832,7 +832,6 @@ impl<W: Write> JpegEncoder<W> {
         let secret_len_bytes = (secret.len() as u64).to_le_bytes();
         let payload: Vec<u8> = secret_len_bytes.iter().chain(secret.iter()).map(|x| x.clone()).collect();
         let mut reader = BitReader::endian(Cursor::new(payload), LittleEndian);
-        let mut counter = 0;
 
         for y in (0..image.height()).step_by(8) {
             for x in (0..image.width()).step_by(8) {
