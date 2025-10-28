@@ -14,8 +14,12 @@ std-feature = "alloc"
 symbol-namepsace = "bindings"
 
 [dependencies]
-image = "0.25.8"
+bitstream-io = "4.9.0"
+image = { path = "vendor/image" }
 panic-halt = "1.0.0"
 wit-bindgen = "0.46.0"
 wit-bindgen-rt = { version = "0.44.0", default-features = false, features = ["bitflags"] }
 
+[patch.crates-io]
+zune-core = { path = "vendor/image/vendor/zune-core-0.4.12" }
+zune-jpeg = { path = "vendor/image/vendor/zune-jpeg-0.4.13" }
