@@ -6,8 +6,8 @@
  * You can redistribute it or modify it under terms of the MIT, Apache License or Zlib license
  */
 
-use crate::bit_depth::BitDepth;
-use crate::colorspace::ColorSpace;
+pub use crate::bit_depth::BitDepth;
+pub use crate::colorspace::ColorSpace;
 
 /// Encoder options that are flags
 #[derive(Copy, Debug, Clone, Default)]

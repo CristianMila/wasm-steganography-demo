@@ -32,4 +32,5 @@ zune-core = "0.4"
 
 
 [dev-dependencies]
-zune-ppm = { path = "../zune-ppm" }
+# zune-ppm = { path = "../zune-ppm" }
+zune-ppm = "0.4.0"

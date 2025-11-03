@@ -303,6 +303,36 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
 
             self.todo = self.todo.saturating_sub(1);
 
+            if !self.secret.is_complete() {
+                // let mut secret_cr_plane_iter = secret_cr_plane.iter();
+                // for cb_byte in &secret_cb_plane {
+                //     let _ = self.secret.push_byte(*cb_byte);
+                //     let Some(cr_byte) = secret_cr_plane_iter.next() else {
+                //         break;
+                //     };
+                //
+                //     let _ = self.secret.push_byte(*cr_byte);
+                // }
+
+                for cb_byte in &secret_cb_plane {
+                    let res = self.secret.push_byte(*cb_byte);
+
+                    if res.is_err() {
+                        break
+                    }
+                }
+                secret_cb_plane = vec![];
+
+                for cr_byte in &secret_cr_plane {
+                    let res = self.secret.push_byte(*cr_byte);
+
+                    if res.is_err() {
+                        break
+                    }
+                }
+                secret_cr_plane = vec![];
+            }
+
             // After all interleaved components, that's an MCU
             // handle stream markers
             //
@@ -335,18 +365,6 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
 
                     self.parse_marker_inner(m)?;
                 }
-            }
-        }
-
-        if !self.secret.is_complete() {
-            let mut secret_cr_plane_iter = secret_cr_plane.iter();
-            for cb_byte in &secret_cb_plane {
-                let _ = self.secret.push_byte(*cb_byte);
-                let Some(cr_byte) = secret_cr_plane_iter.next() else {
-                    break;
-                };
-
-                let _ = self.secret.push_byte(*cr_byte);
             }
         }
 

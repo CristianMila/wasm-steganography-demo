@@ -1,5 +1,6 @@
 const U64_BYTES: u64 = (u64::BITS as u64) / 8;
 
+#[derive(Debug)]
 pub struct Secret {
     bytes: Vec<u8>,
     expected_secret_len: Option<u64>,
@@ -38,7 +39,7 @@ impl Secret {
         match self.expected_secret_len {
             None => {
                 if self.bytes.len() >= U64_BYTES as usize {
-                    self.expected_secret_len = get_expected_str_len(&self.bytes[..]).ok();
+                    self.expected_secret_len = get_expected_str_len(self.bytes.as_slice()).ok();
                 }
             },
             Some(len) => {
@@ -64,19 +65,43 @@ impl Secret {
     }
 }
 
-fn get_expected_str_len(bytes: &[u8]) -> Result<u64, SecretErrors> {
-    if bytes.len() < 8 {
+pub fn get_expected_str_len(bytes: &[u8]) -> Result<u64, SecretErrors> {
+    if bytes.len() < U64_BYTES as usize {
         return Err(SecretErrors::Underflow);
     }
 
-    let len_bytes: [u8; 8] = bytes[0..8].try_into().unwrap();
+    let len_bytes: [u8; 8] = bytes[..U64_BYTES as usize].try_into().unwrap();
 
     Ok(u64::from_le_bytes(len_bytes))
 }
 
+#[derive(Debug)]
 pub enum SecretErrors {
     Overflow,
     Underflow,
     Incomplete,
     Utf8Error
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Secret;
+
+    #[test]
+    fn push_enough_bytes_to_get_valid_len() {
+        let mut secret = Secret::new();
+        let _ = secret.push_byte(0x3);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+        let _ = secret.push_byte(0x0);
+
+        let expected_len = super::get_expected_str_len(&secret.bytes).expect("error getting str len from first 8 bytes");
+
+        assert_eq!(3, expected_len);
+    }
 }

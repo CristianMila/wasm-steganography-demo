@@ -4,6 +4,7 @@ extern crate alloc;
 
 use std::io::Cursor;
 use image::{ImageReader, Rgb};
+use zune_image::{codecs::qoi::zune_core::options::DecoderOptions, traits::StegoEncoder};
 pub use bindings::Guest;
 
 bindings::export!(Steganography with_types_in bindings);
@@ -11,6 +12,24 @@ bindings::export!(Steganography with_types_in bindings);
 pub struct Steganography;
 
 impl Guest for Steganography {
+    fn encode_secret_into_jpeg(secret: String, image: Vec<u8>, options: Option<bindings::EncoderOptions>) -> Vec<u8> {
+        let options = zune_image::codecs::jpeg::EncoderOptions::default();
+        let mut zune_jpeg_encoder = zune_image::codecs::jpeg::JpegEncoder::new_with_options(options);
+        let loaded_img = zune_image::image::Image::read(image, DecoderOptions::default()).expect("failed to load image");
+        let encoded_image = zune_jpeg_encoder.encode_with_secret(
+            &loaded_img,
+            secret.as_bytes()
+        ).expect("failed to encode image as jpg with zune");
+
+        encoded_image.to_vec()
+    }
+
+    fn decode_secret_from_jpeg(image: Vec<u8>) -> String {
+        let decoded_img = zune_image::codecs::jpeg::JpegDecoder::new(image.as_slice());
+
+        decoded_img.get_secret().expect("error extracting the secret")
+    }
+
     fn encode_secret_into_bmp(secret: String, image: Vec<u8>) -> Vec<u8> {
         let cloned_image = image.to_vec();
         let image = ImageReader::new(Cursor::new(&cloned_image)).with_guessed_format().unwrap().decode().unwrap();
