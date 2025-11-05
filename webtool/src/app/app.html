@@ -1,9 +1,10 @@
 <div class="card">
   <h2>STEGANOGRAPHY WASM DEMO</h2>
-  <p>Embeds and extracts text into and from an image.<br/>Only BMP 24bit color depth images are supported.<br/>It runs fully in the browser as a WebAssembly module, so neither images or secrets are sent anywhere. You can try this offline.</p>
+  <p>Embeds and extracts text into and from an image.<br/>Compatible formats: BMP 24bpp and JPEG.<br/>It runs fully in the browser as a WebAssembly module, so neither images or secrets are sent anywhere. You can use it offline.</p>
   <p><strong>DISCLAIMER:</strong><br/>
-  <strong>This is not a security tool</strong>, just an excuse to learn about WebAssembly.
-  Secrets are embedded into the picture using the LSB technique without any additional encryption.
+    <strong>This is not a security tool</strong>, just an excuse to learn about WebAssembly.<br/>
+    Secrets are embededed into the picture using LSB for BMP and J-Steg for JPEG.<br/>
+    The application <strong>does not perform any encryption over the secret beign embedded</strong>, so don't use it to store private information unless the text is already encrypted.
   </p>
   @if (imageUrl() != null) {
   <img class="img-select" [src]="imageUrl()" (click)="filePicker.click()"/>
@@ -15,7 +16,7 @@
     </div>
   </div>
   }
-  <input hidden type="file" #filePicker (change)="onFileSelected($event)" accept=".bmp,image/bmp" />
+  <input hidden type="file" #filePicker (change)="onFileSelected($event)" accept=".bmp,image/bmp,.jpg,.jpeg,image/jpg,image/jpeg" />
   <div class="card-row">
     <input type="button" value="Decode" [disabled]="imageBytes === null" (click)="decode()"/>
     <input id="decodedSecretInput" type="text" [value]="decodedSecret()" readonly/>

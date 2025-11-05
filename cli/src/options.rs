@@ -4,9 +4,6 @@ use clio::{InputPath, OutputPath};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub(crate) struct Cli {
-    /// Path to the WASM Component. Defaults to "./wasm_steganography.wasm"
-    #[arg(long)]
-    pub wasm: Option<InputPath>,
     #[command(subcommand)]
     pub command: Command
 }

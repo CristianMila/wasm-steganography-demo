@@ -6,8 +6,10 @@ public class SteganographyWasmModule : IDisposable
     private readonly Store _store;
     private readonly Instance _instance;
     private readonly Memory _memory;
-    private readonly Func<int, int, int, int, int> _encodeSecret;
-    private readonly Func<int, int, int> _decodeSecret;
+    private readonly Func<int, int, int, int, int> _encodeSecretIntoBmp;
+    private readonly Func<int, int, int, int, int> _encodeSecretIntoJpeg;
+    private readonly Func<int, int, int> _decodeSecretFromBmp;
+    private readonly Func<int, int, int> _decodeSecretFromJpeg;
     private readonly Func<int, int, int, int, int> _cabi_realloc;
     private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
 
@@ -29,16 +31,20 @@ public class SteganographyWasmModule : IDisposable
 
         _instance = linker.Instantiate(_store, module);
         _memory = _instance.GetMemory("memory")
-        ?? throw new InvalidOperationException("No se encontró la memoria exportada.");
-        _encodeSecret = _instance.GetFunction<int, int, int, int, int>("encode-secret-into-bmp")
-        ?? throw new InvalidOperationException("No se encontró la función de codificación.");
-        _decodeSecret = _instance.GetFunction<int, int, int>("decode-secret-from-bmp")
-        ?? throw new InvalidOperationException("No se encontró la función de decodificación.");
+	    ?? throw new InvalidOperationException("No se encontró la memoria exportada.");
+        _encodeSecretIntoBmp = _instance.GetFunction<int, int, int, int, int>("encode-secret-into-bmp")
+	    ?? throw new InvalidOperationException("No se encontró la función de codificación.");
+        _decodeSecretFromBmp = _instance.GetFunction<int, int, int>("decode-secret-from-bmp")
+	    ?? throw new InvalidOperationException("No se encontró la función de decodificación.");
+        _encodeSecretIntoJpeg = _instance.GetFunction<int, int, int, int, int>("encode-secret-into-jpeg")
+	    ?? throw new InvalidOperationException("No se encontró la función de codificación.");
+        _decodeSecretFromJpeg = _instance.GetFunction<int, int, int>("decode-secret-from-jpeg")
+	    ?? throw new InvalidOperationException("No se encontró la función de decodificación.");
         _cabi_realloc = _instance.GetFunction<int, int, int, int, int>("cabi_realloc")
             ?? throw new InvalidOperationException("No se encontró la función de alloc.");
     }
 
-    public async Task<string> Decode(byte[] image)
+    public async Task<string> DecodeFromBmp(byte[] image)
     {
         await _asyncLock.WaitAsync();
 
@@ -48,7 +54,7 @@ public class SteganographyWasmModule : IDisposable
             var (imgPtr, imgLen) = WriteByteArray(image);
 
             // call the module's exported function
-            int resultPtr = _decodeSecret((int)imgPtr, (int)imgLen);
+            int resultPtr = _decodeSecretFromBmp((int)imgPtr, (int)imgLen);
 
             // read the result, encoded as a 32bit integer:
             // - 2 high bytes represent the memory pointer to the result
@@ -68,7 +74,7 @@ public class SteganographyWasmModule : IDisposable
         }
     }
 
-    public async Task<byte[]> Encode(string secret, byte[] image)
+    public async Task<byte[]> EncodeIntoBmp(string secret, byte[] image)
     {
         await _asyncLock.WaitAsync();
 
@@ -79,7 +85,68 @@ public class SteganographyWasmModule : IDisposable
             var (imgPtr, imgLen) = WriteByteArray(image);
 
             // call the module's exported function
-            var resultPtr = _encodeSecret((int)secretPtr, (int)secretLen, (int)imgPtr, (int)imgLen);
+            var resultPtr = _encodeSecretIntoBmp((int)secretPtr, (int)secretLen, (int)imgPtr, (int)imgLen);
+
+            // read the result, encoded as a 32bit integer:
+            // - 2 high bytes represent the memory pointer to the result
+            var resultAddress = _memory.ReadInt32(resultPtr);
+
+            // - 2 low bytes represent the length of the data
+            var resultLength = _memory.ReadInt32(resultPtr + 4);
+
+            // get the resulting byte array
+            var outputImage = _memory.GetSpan(resultAddress, resultLength).ToArray();
+
+            return outputImage;
+        }
+        finally
+        {
+            _asyncLock.Release();
+        }
+    }
+
+    public async Task<string> DecodeFromJpeg(byte[] image)
+    {
+        await _asyncLock.WaitAsync();
+
+        try
+        {
+            // write parameters into the module's memory
+            var (imgPtr, imgLen) = WriteByteArray(image);
+
+            // call the module's exported function
+            int resultPtr = _decodeSecretFromJpeg((int)imgPtr, (int)imgLen);
+
+            // read the result, encoded as a 32bit integer:
+            // - 2 high bytes represent the memory pointer to the result
+            int resultAddress = _memory.ReadInt32(resultPtr);
+
+            // - 2 low bytes represent the length of the data
+            int resultLength = _memory.ReadInt32(resultPtr + 4);
+
+            // get the decoded string encoded in the byte array pointed by the result
+            var secret = _memory.ReadString(resultAddress, resultLength);
+
+            return secret;
+        }
+        finally
+        {
+            _asyncLock.Release();
+        }
+    }
+
+    public async Task<byte[]> EncodeIntoJpeg(string secret, byte[] image)
+    {
+        await _asyncLock.WaitAsync();
+
+        try
+        {
+            // write parameters into the module's memory
+            var (secretPtr, secretLen) = WriteString(secret);
+            var (imgPtr, imgLen) = WriteByteArray(image);
+
+            // call the module's exported function
+            var resultPtr = _encodeSecretIntoJpeg((int)secretPtr, (int)secretLen, (int)imgPtr, (int)imgLen);
 
             // read the result, encoded as a 32bit integer:
             // - 2 high bytes represent the memory pointer to the result

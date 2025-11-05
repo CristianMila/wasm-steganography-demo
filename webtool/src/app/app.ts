@@ -2,7 +2,7 @@ import { Component, signal, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { encodeSecretIntoBmp, decodeSecretFromBmp } from '../bindings/wasm_steganography.js';
+import { encodeSecretIntoBmp, decodeSecretFromBmp, encodeSecretIntoJpeg, decodeSecretFromJpeg } from '../bindings/wasm_steganography.js';
 import * as FileSaver from 'file-saver';
 
 @Component({
@@ -20,6 +20,7 @@ export class App {
   timeElapsedMs = signal(0);
   decodedSecret: WritableSignal<string | null> = signal(null);
   secretToEncode: string | null = null;
+  blobMimeType: string | null = null;
 
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -29,7 +30,8 @@ export class App {
       this.imageFileName = file.name;
       const bytes = await file.arrayBuffer();
       this.imageBytes = new Uint8Array(bytes);
-      const imgBlob = new Blob([bytes], { type: 'image/bmp' });
+      const imgBlob = new Blob([bytes], { type: file.type });
+      this.blobMimeType = file.type;
 
       if (this.imageUrl() !== null) {
         URL.revokeObjectURL(this.imageUrl()!);
@@ -46,8 +48,15 @@ export class App {
 
     try {
       this.measureInMs(() => {
-        const secret = decodeSecretFromBmp(this.imageBytes!);
-        this.decodedSecret.set(secret);
+        if (this.blobMimeType === 'image/jpeg' || this.blobMimeType === 'image/jpg') {
+          const secret = decodeSecretFromJpeg(this.imageBytes!);
+          this.decodedSecret.set(secret);
+        } else if (this.blobMimeType === 'image/bmp') {
+          const secret = decodeSecretFromBmp(this.imageBytes!);
+          this.decodedSecret.set(secret);
+        } else {
+          throw Error("Unsupported image format for decoding");
+        }
       }, this.timeElapsedMs);
     } catch (err) {
       console.error(err);
@@ -66,7 +75,16 @@ export class App {
     this.decodedSecret.set(null);
 
     try {
-      const encodedImgBytes = this.measureInMs(() => encodeSecretIntoBmp(this.secretToEncode!, this.imageBytes!), this.timeElapsedMs);
+      const encodedImgBytes = this.measureInMs(() => {
+        if (this.blobMimeType === 'image/jpeg' || this.blobMimeType === 'image/jpg') {
+          return encodeSecretIntoJpeg(this.secretToEncode!, this.imageBytes!);
+        } else if (this.blobMimeType === 'image/bmp') {
+          return encodeSecretIntoBmp(this.secretToEncode!, this.imageBytes!);
+        } else {
+          throw Error("Unsupported image format for encoding");
+        }
+      }, this.timeElapsedMs);
+
       this.saveToClient(encodedImgBytes, this.imageFileName!);
     } catch(err) {
       console.error(err);
@@ -86,7 +104,7 @@ export class App {
   }
 
   saveToClient = (bytes: Uint8Array, filename: string): void => {
-    const blob = new Blob([bytes.slice()], { type: 'image/bmp'});
+    const blob = new Blob([bytes.slice()], { type: this.blobMimeType ?? 'application/octet-stream' });
     FileSaver.saveAs(blob, filename);
   }
 }

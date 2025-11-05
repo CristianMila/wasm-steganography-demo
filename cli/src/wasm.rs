@@ -5,10 +5,12 @@ use wasmtime_wasi::{WasiCtx, WasiView, WasiCtxView};
 
 const WIT_ENCODE_SECRET_INTO_BMP: &str = "encode-secret-into-bmp";
 const WIT_DECODE_SECRET_FROM_BMP: &str = "decode-secret-from-bmp";
+const WIT_ENCODE_SECRET_INTO_JPEG: &str = "encode-secret-into-jpeg";
+const WIT_DECODE_SECRET_FROM_JPEG: &str = "decode-secret-from-jpeg";
 
 pub(crate) struct MyState {
-    ctx: WasiCtx,
-    table: ResourceTable
+    pub(crate) ctx: WasiCtx,
+    pub(crate) table: ResourceTable
 }
 
 impl WasiView for MyState {
@@ -60,6 +62,22 @@ impl WasmComponent {
 
     pub fn decode_secret_from_bmp(&mut self, image_bytes: Vec<u8>) -> Result<String> {
         let func = self.instance.get_export(&mut self.store, None, WIT_DECODE_SECRET_FROM_BMP).expect("couldnt find the function");
+        let typed_func_decode: TypedFunc<(Vec<u8>,), (String,)> = self.instance.get_typed_func(&mut self.store, func.1).expect("filed to get the function");
+        let secret = typed_func_decode.call(&mut self.store, (image_bytes,)).expect("something happened decoding the secret");
+
+        Ok(secret.0)
+    }
+
+    pub fn encode_secret_into_jpeg(&mut self, secret: &str, image_bytes: Vec<u8>) -> Result<Vec<u8>> {
+        let func = self.instance.get_export(&mut self.store, None, WIT_ENCODE_SECRET_INTO_JPEG).context("couldnt find the function")?;
+        let typed_func: TypedFunc<(String, Vec<u8>), (Vec<u8>,)> = self.instance.get_typed_func(&mut self.store, func.1).expect("filed to get the function");
+        let image = typed_func.call(&mut self.store, (secret.to_owned(), image_bytes.to_vec())).expect("something happened picking the wasm function result");
+        
+        Ok(image.0)
+    }
+
+    pub fn decode_secret_from_jpeg(&mut self, image_bytes: Vec<u8>) -> Result<String> {
+        let func = self.instance.get_export(&mut self.store, None, WIT_DECODE_SECRET_FROM_JPEG).expect("couldnt find the function");
         let typed_func_decode: TypedFunc<(Vec<u8>,), (String,)> = self.instance.get_typed_func(&mut self.store, func.1).expect("filed to get the function");
         let secret = typed_func_decode.call(&mut self.store, (image_bytes,)).expect("something happened decoding the secret");
 

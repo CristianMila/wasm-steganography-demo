@@ -12,9 +12,8 @@ bindings::export!(Steganography with_types_in bindings);
 pub struct Steganography;
 
 impl Guest for Steganography {
-    fn encode_secret_into_jpeg(secret: String, image: Vec<u8>, options: Option<bindings::EncoderOptions>) -> Vec<u8> {
-        let options = zune_image::codecs::jpeg::EncoderOptions::default();
-        let mut zune_jpeg_encoder = zune_image::codecs::jpeg::JpegEncoder::new_with_options(options);
+    fn encode_secret_into_jpeg(secret: String, image: Vec<u8>) -> Vec<u8> {
+        let mut zune_jpeg_encoder = zune_image::codecs::jpeg::JpegEncoder::new();
         let loaded_img = zune_image::image::Image::read(image, DecoderOptions::default()).expect("failed to load image");
         let encoded_image = zune_jpeg_encoder.encode_with_secret(
             &loaded_img,

@@ -2,32 +2,50 @@ mod wasm;
 mod options;
 
 use anyhow::Context;
-use wasm::WasmComponent;
+use wasmtime::component::*;
 use options::*;
 use clap::Parser;
 use clio::{InputPath, OutputPath};
+use wasmtime::{component::Component, Engine, Store};
+use wasmtime_wasi::WasiCtx;
 use std::fs;
+
+use crate::wasm::MyState;
 
 const WASM_BYTES: &[u8] = include_bytes!(env!("WASM_STEGANOGRAPHY_FILE_PATH"));
 
+wasmtime::component::bindgen!("steganography" in "../wasm/wit/world.wit");
+
 fn main() -> anyhow::Result<()> {
+    dotenv::dotenv().ok();
+
     let args = Cli::parse();
-    let wasm_bytes = match args.wasm {
-        Some(path) => std::fs::read(path.path().path()).with_context(|| format!("Failed reading the wasm component at: {}", path))?,
-        None => WASM_BYTES.to_vec()
-    };
-    
+    let engine = Engine::default();
+    let component = Component::from_binary(&engine, WASM_BYTES).with_context(|| "Failed to open the wasm component.")?;
+    let mut builder = WasiCtx::builder();
+    let mut store = Store::new(&engine, MyState {
+        ctx: builder.build(),
+        table: ResourceTable::new() 
+    });
+    let mut linker = Linker::<MyState>::new(&engine);
+    wasmtime_wasi::p2::add_to_linker_sync(&mut linker).context("Failed adding the imported log function to the wasm linker")?;
+
+    let _ = linker.root().func_wrap("log", |_store, s: (String,)| {
+        println!("{}", s.0);
+        Ok(())
+    });
+    let instance = linker.instantiate(&mut store, &component).context("Failed to instantiate the linker")?;
+    let steg = Steganography::new(&mut store, &instance)?;
+
     match args.command {
         Command::Encode { secret, input_file, output_file } => {
-            let mut component = WasmComponent::from_bytes(&wasm_bytes)?;
             let image_bytes = fs::read(InputPath::path(&input_file).path()).with_context(|| format!("Failed reading file: {}", &output_file.path()))?;
-            let encoded_image = component.encode_secret_into_bmp(&secret, image_bytes)?;
+            let encoded_image = steg.call_encode_secret_into_bmp(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?;
             fs::write(OutputPath::path(&output_file).path(), &encoded_image).with_context(|| format!("Failed writing file: {}", &output_file.path()))?;
         },
         Command::Decode { input_file } => {
-            let mut component = WasmComponent::from_bytes(&wasm_bytes)?;
             let image_bytes = fs::read(InputPath::path(&input_file).path()).with_context(|| format!("Failed reading file: {}", &input_file.path()))?;
-            let secret_decoded = component.decode_secret_from_bmp(image_bytes)?;
+            let secret_decoded = steg.call_decode_secret_from_bmp(&mut store, &image_bytes)?;
 
             println!("{}", secret_decoded);
         }

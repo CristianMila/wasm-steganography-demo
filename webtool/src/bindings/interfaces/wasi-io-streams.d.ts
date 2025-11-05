@@ -1,4 +1,5 @@
 /** @module Interface wasi:io/streams@0.2.3 **/
+export type Pollable = import('./wasi-io-poll.js').Pollable;
 export type Error = import('./wasi-io-error.js').Error;
 export type StreamError = StreamErrorLastOperationFailed | StreamErrorClosed;
 export interface StreamErrorLastOperationFailed {
@@ -14,6 +15,7 @@ export class InputStream {
    * This type does not have a public constructor.
    */
   private constructor();
+  subscribe(): Pollable;
 }
 
 export class OutputStream {
@@ -25,4 +27,5 @@ export class OutputStream {
   write(contents: Uint8Array): void;
   blockingWriteAndFlush(contents: Uint8Array): void;
   blockingFlush(): void;
+  subscribe(): Pollable;
 }

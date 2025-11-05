@@ -1,17 +1,12 @@
 package local:steganography;
 
 world steganography {
-	record encoder-options {
-		quality: u8,
-		should-compress: bool
-	}
-
 	import log: func(message: string);
 
 	export encode-secret-into-bmp: func(secret: string, image: list<u8>) -> list<u8>;
 	export decode-secret-from-bmp: func(image: list<u8>) -> string;
 
-	export encode-secret-into-jpeg: func(secret: string, image: list<u8>, options: option<encoder-options>) -> list<u8>;
+	export encode-secret-into-jpeg: func(secret: string, image: list<u8>) -> list<u8>;
 	export decode-secret-from-jpeg: func(image: list<u8>) -> string;
 }
 
