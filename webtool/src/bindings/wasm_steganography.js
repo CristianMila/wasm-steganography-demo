@@ -3,6 +3,7 @@ import { monotonicClock, wallClock } from '@bytecodealliance/preview2-shim/clock
 import { preopens, types } from '@bytecodealliance/preview2-shim/filesystem';
 import { error, poll as poll$1, streams } from '@bytecodealliance/preview2-shim/io';
 import { random } from '@bytecodealliance/preview2-shim/random';
+import log from 'log';
 const { getEnvironment } = environment;
 const { exit } = exit$1;
 const { getStderr } = stderr;
@@ -987,7 +988,24 @@ let exports2;
 let memory0;
 let realloc0;
 
-function trampoline14(arg0) {
+function trampoline14(arg0, arg1) {
+  var ptr0 = arg0;
+  var len0 = arg1;
+  var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+  _debugLog('[iface="log", function="log"] [Instruction::CallInterface] (async? sync, @ enter)');
+  const _interface_call_currentTaskID = startCurrentTask(0, false, 'log');
+  log(result0);
+  _debugLog('[iface="log", function="log"] [Instruction::CallInterface] (sync, @ post-call)');
+  endCurrentTask(0);
+  _debugLog('[iface="log", function="log"][Instruction::Return]', {
+    funcName: 'log',
+    paramCount: 0,
+    postReturn: false
+  });
+}
+
+
+function trampoline15(arg0) {
   _debugLog('[iface="wasi:cli/environment@0.2.3", function="get-environment"] [Instruction::CallInterface] (async? sync, @ enter)');
   const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-environment');
   const ret = getEnvironment();
@@ -1018,7 +1036,7 @@ function trampoline14(arg0) {
 }
 
 
-function trampoline15(arg0) {
+function trampoline16(arg0) {
   _debugLog('[iface="wasi:clocks/wall-clock@0.2.3", function="now"] [Instruction::CallInterface] (async? sync, @ enter)');
   const _interface_call_currentTaskID = startCurrentTask(0, false, 'now');
   const ret = now$1();
@@ -1039,7 +1057,7 @@ const captureTable0= new Map();
 let captureCnt0 = 0;
 handleTables[0] = handleTable0;
 
-function trampoline16(arg0, arg1) {
+function trampoline17(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable0[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable0.get(rep2);
@@ -1237,7 +1255,7 @@ const captureTable4= new Map();
 let captureCnt4 = 0;
 handleTables[4] = handleTable4;
 
-function trampoline17(arg0, arg1, arg2) {
+function trampoline18(arg0, arg1, arg2) {
   var handle1 = arg0;
   var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable4.get(rep2);
@@ -1455,7 +1473,7 @@ function trampoline17(arg0, arg1, arg2) {
 }
 
 
-function trampoline18(arg0, arg1, arg2) {
+function trampoline19(arg0, arg1, arg2) {
   var handle1 = arg0;
   var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable4.get(rep2);
@@ -1673,7 +1691,7 @@ function trampoline18(arg0, arg1, arg2) {
 }
 
 
-function trampoline19(arg0, arg1) {
+function trampoline20(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable4.get(rep2);
@@ -1891,7 +1909,7 @@ function trampoline19(arg0, arg1) {
 }
 
 
-function trampoline20(arg0, arg1) {
+function trampoline21(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable4.get(rep2);
@@ -2143,7 +2161,7 @@ function trampoline20(arg0, arg1) {
 }
 
 
-function trampoline21(arg0, arg1) {
+function trampoline22(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable4.get(rep2);
@@ -2428,7 +2446,7 @@ function trampoline21(arg0, arg1) {
 }
 
 
-function trampoline22(arg0, arg1) {
+function trampoline23(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable3[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable3.get(rep2);
@@ -2502,7 +2520,7 @@ function trampoline22(arg0, arg1) {
 }
 
 
-function trampoline23(arg0, arg1, arg2, arg3) {
+function trampoline24(arg0, arg1, arg2, arg3) {
   var handle1 = arg0;
   var rep2 = handleTable3[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable3.get(rep2);
@@ -2578,7 +2596,7 @@ function trampoline23(arg0, arg1, arg2, arg3) {
 }
 
 
-function trampoline24(arg0, arg1) {
+function trampoline25(arg0, arg1) {
   var handle1 = arg0;
   var rep2 = handleTable3[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable3.get(rep2);
@@ -2651,7 +2669,7 @@ function trampoline24(arg0, arg1) {
 }
 
 
-function trampoline25(arg0, arg1, arg2, arg3) {
+function trampoline26(arg0, arg1, arg2, arg3) {
   var handle1 = arg0;
   var rep2 = handleTable3[(handle1 << 1) + 1] & ~T_FLAG;
   var rsc0 = captureTable3.get(rep2);
@@ -2727,7 +2745,7 @@ function trampoline25(arg0, arg1, arg2, arg3) {
 }
 
 
-function trampoline26(arg0, arg1, arg2) {
+function trampoline27(arg0, arg1, arg2) {
   var len3 = arg1;
   var base3 = arg0;
   var result3 = [];
@@ -2768,7 +2786,7 @@ function trampoline26(arg0, arg1, arg2) {
 }
 
 
-function trampoline27(arg0, arg1) {
+function trampoline28(arg0, arg1) {
   _debugLog('[iface="wasi:random/random@0.2.3", function="get-random-bytes"] [Instruction::CallInterface] (async? sync, @ enter)');
   const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-random-bytes');
   const ret = getRandomBytes(BigInt.asUintN(64, arg0));
@@ -2789,7 +2807,7 @@ function trampoline27(arg0, arg1) {
 }
 
 
-function trampoline28(arg0) {
+function trampoline29(arg0) {
   _debugLog('[iface="wasi:filesystem/preopens@0.2.3", function="get-directories"] [Instruction::CallInterface] (async? sync, @ enter)');
   const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-directories');
   const ret = getDirectories();
@@ -3023,19 +3041,22 @@ export const $init = (() => {
   let gen = (function* init () {
     const module0 = fetchCompile(new URL('./wasm_steganography.core.wasm', import.meta.url));
     const module1 = fetchCompile(new URL('./wasm_steganography.core2.wasm', import.meta.url));
-    const module2 = base64Compile('AGFzbQEAAAABPwtgA39+fwF/YAR/f39/AX9gAAF/YAJ/fwF/YAF/AGABfwBgAn9/AGADf35/AGAEf39/fwBgA39/fwBgAn5/AAMYFwABAQIDAwMEBQUGBwcGBgYGCAYICQoFBAUBcAEXFwd1GAEwAAABMQABATIAAgEzAAMBNAAEATUABQE2AAYBNwAHATgACAE5AAkCMTAACgIxMQALAjEyAAwCMTMADQIxNAAOAjE1AA8CMTYAEAIxNwARAjE4ABICMTkAEwIyMAAUAjIxABUCMjIAFggkaW1wb3J0cwEACqECFw0AIAAgASACQQARAAALDwAgACABIAIgA0EBEQEACw8AIAAgASACIANBAhEBAAsHAEEDEQIACwsAIAAgAUEEEQMACwsAIAAgAUEFEQMACwsAIAAgAUEGEQMACwkAIABBBxEEAAsJACAAQQgRBQALCQAgAEEJEQUACwsAIAAgAUEKEQYACw0AIAAgASACQQsRBwALDQAgACABIAJBDBEHAAsLACAAIAFBDREGAAsLACAAIAFBDhEGAAsLACAAIAFBDxEGAAsLACAAIAFBEBEGAAsPACAAIAEgAiADQRERCAALCwAgACABQRIRBgALDwAgACABIAIgA0ETEQgACw0AIAAgASACQRQRCQALCwAgACABQRURCgALCQAgAEEWEQUACwAvCXByb2R1Y2VycwEMcHJvY2Vzc2VkLWJ5AQ13aXQtY29tcG9uZW50BzAuMjI3LjEAjAoEbmFtZQATEndpdC1jb21wb25lbnQ6c2hpbQHvCRcAK2FkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtY2xvY2tfdGltZV9nZXQBJWFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtZmRfd3JpdGUCKGFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtcG9sbF9vbmVvZmYDKGFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtc2NoZWRfeWllbGQEJ2FkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtcmFuZG9tX2dldAUoYWRhcHQtd2FzaV9zbmFwc2hvdF9wcmV2aWV3MS1lbnZpcm9uX2dldAYuYWRhcHQtd2FzaV9zbmFwc2hvdF9wcmV2aWV3MS1lbnZpcm9uX3NpemVzX2dldAcmYWRhcHQtd2FzaV9zbmFwc2hvdF9wcmV2aWV3MS1wcm9jX2V4aXQIM2luZGlyZWN0LXdhc2k6Y2xpL2Vudmlyb25tZW50QDAuMi4zLWdldC1lbnZpcm9ubWVudAkpaW5kaXJlY3Qtd2FzaTpjbG9ja3Mvd2FsbC1jbG9ja0AwLjIuMy1ub3cKOmluZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS90eXBlc0AwLjIuMy1maWxlc3lzdGVtLWVycm9yLWNvZGULR2luZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS90eXBlc0AwLjIuMy1bbWV0aG9kXWRlc2NyaXB0b3IucmVhZC12aWEtc3RyZWFtDEhpbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtW21ldGhvZF1kZXNjcmlwdG9yLndyaXRlLXZpYS1zdHJlYW0NSWluZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS90eXBlc0AwLjIuMy1bbWV0aG9kXWRlc2NyaXB0b3IuYXBwZW5kLXZpYS1zdHJlYW0OQGluZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS90eXBlc0AwLjIuMy1bbWV0aG9kXWRlc2NyaXB0b3IuZ2V0LXR5cGUPPGluZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS90eXBlc0AwLjIuMy1bbWV0aG9kXWRlc2NyaXB0b3Iuc3RhdBBAaW5kaXJlY3Qtd2FzaTppby9zdHJlYW1zQDAuMi4zLVttZXRob2Rdb3V0cHV0LXN0cmVhbS5jaGVjay13cml0ZRE6aW5kaXJlY3Qtd2FzaTppby9zdHJlYW1zQDAuMi4zLVttZXRob2Rdb3V0cHV0LXN0cmVhbS53cml0ZRJDaW5kaXJlY3Qtd2FzaTppby9zdHJlYW1zQDAuMi4zLVttZXRob2Rdb3V0cHV0LXN0cmVhbS5ibG9ja2luZy1mbHVzaBNNaW5kaXJlY3Qtd2FzaTppby9zdHJlYW1zQDAuMi4zLVttZXRob2Rdb3V0cHV0LXN0cmVhbS5ibG9ja2luZy13cml0ZS1hbmQtZmx1c2gUIGluZGlyZWN0LXdhc2k6aW8vcG9sbEAwLjIuMy1wb2xsFTJpbmRpcmVjdC13YXNpOnJhbmRvbS9yYW5kb21AMC4yLjMtZ2V0LXJhbmRvbS1ieXRlcxY3aW5kaXJlY3Qtd2FzaTpmaWxlc3lzdGVtL3ByZW9wZW5zQDAuMi4yLWdldC1kaXJlY3Rvcmllcw');
-    const module3 = base64Compile('AGFzbQEAAAABPwtgA39+fwF/YAR/f39/AX9gAAF/YAJ/fwF/YAF/AGABfwBgAn9/AGADf35/AGAEf39/fwBgA39/fwBgAn5/AAKQARgAATAAAAABMQABAAEyAAEAATMAAgABNAADAAE1AAMAATYAAwABNwAEAAE4AAUAATkABQACMTAABgACMTEABwACMTIABwACMTMABgACMTQABgACMTUABgACMTYABgACMTcACAACMTgABgACMTkACAACMjAACQACMjEACgACMjIABQAIJGltcG9ydHMBcAEXFwkdAQBBAAsXAAECAwQFBgcICQoLDA0ODxAREhMUFRYALwlwcm9kdWNlcnMBDHByb2Nlc3NlZC1ieQENd2l0LWNvbXBvbmVudAcwLjIyNy4xABwEbmFtZQAVFHdpdC1jb21wb25lbnQ6Zml4dXBz');
+    const module2 = base64Compile('AGFzbQEAAAABRAxgAn9/AGADf35/AX9gBH9/f38Bf2AAAX9gAn9/AX9gAX8AYAF/AGACf38AYAN/fn8AYAR/f39/AGADf39/AGACfn8AAxkYAAECAgMEBAQFBgYHCAgHBwcHCQcJCgsGBAUBcAEYGAd6GQEwAAABMQABATIAAgEzAAMBNAAEATUABQE2AAYBNwAHATgACAE5AAkCMTAACgIxMQALAjEyAAwCMTMADQIxNAAOAjE1AA8CMTYAEAIxNwARAjE4ABICMTkAEwIyMAAUAjIxABUCMjIAFgIyMwAXCCRpbXBvcnRzAQAKrQIYCwAgACABQQARAAALDQAgACABIAJBAREBAAsPACAAIAEgAiADQQIRAgALDwAgACABIAIgA0EDEQIACwcAQQQRAwALCwAgACABQQURBAALCwAgACABQQYRBAALCwAgACABQQcRBAALCQAgAEEIEQUACwkAIABBCREGAAsJACAAQQoRBgALCwAgACABQQsRBwALDQAgACABIAJBDBEIAAsNACAAIAEgAkENEQgACwsAIAAgAUEOEQcACwsAIAAgAUEPEQcACwsAIAAgAUEQEQcACwsAIAAgAUEREQcACw8AIAAgASACIANBEhEJAAsLACAAIAFBExEHAAsPACAAIAEgAiADQRQRCQALDQAgACABIAJBFREKAAsLACAAIAFBFhELAAsJACAAQRcRBgALAC8JcHJvZHVjZXJzAQxwcm9jZXNzZWQtYnkBDXdpdC1jb21wb25lbnQHMC4yMjcuMQCgCgRuYW1lABMSd2l0LWNvbXBvbmVudDpzaGltAYMKGAASaW5kaXJlY3QtJHJvb3QtbG9nASthZGFwdC13YXNpX3NuYXBzaG90X3ByZXZpZXcxLWNsb2NrX3RpbWVfZ2V0AiVhZGFwdC13YXNpX3NuYXBzaG90X3ByZXZpZXcxLWZkX3dyaXRlAyhhZGFwdC13YXNpX3NuYXBzaG90X3ByZXZpZXcxLXBvbGxfb25lb2ZmBChhZGFwdC13YXNpX3NuYXBzaG90X3ByZXZpZXcxLXNjaGVkX3lpZWxkBSdhZGFwdC13YXNpX3NuYXBzaG90X3ByZXZpZXcxLXJhbmRvbV9nZXQGKGFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtZW52aXJvbl9nZXQHLmFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtZW52aXJvbl9zaXplc19nZXQIJmFkYXB0LXdhc2lfc25hcHNob3RfcHJldmlldzEtcHJvY19leGl0CTNpbmRpcmVjdC13YXNpOmNsaS9lbnZpcm9ubWVudEAwLjIuMy1nZXQtZW52aXJvbm1lbnQKKWluZGlyZWN0LXdhc2k6Y2xvY2tzL3dhbGwtY2xvY2tAMC4yLjMtbm93CzppbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtZmlsZXN5c3RlbS1lcnJvci1jb2RlDEdpbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtW21ldGhvZF1kZXNjcmlwdG9yLnJlYWQtdmlhLXN0cmVhbQ1IaW5kaXJlY3Qtd2FzaTpmaWxlc3lzdGVtL3R5cGVzQDAuMi4zLVttZXRob2RdZGVzY3JpcHRvci53cml0ZS12aWEtc3RyZWFtDklpbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtW21ldGhvZF1kZXNjcmlwdG9yLmFwcGVuZC12aWEtc3RyZWFtD0BpbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtW21ldGhvZF1kZXNjcmlwdG9yLmdldC10eXBlEDxpbmRpcmVjdC13YXNpOmZpbGVzeXN0ZW0vdHlwZXNAMC4yLjMtW21ldGhvZF1kZXNjcmlwdG9yLnN0YXQRQGluZGlyZWN0LXdhc2k6aW8vc3RyZWFtc0AwLjIuMy1bbWV0aG9kXW91dHB1dC1zdHJlYW0uY2hlY2std3JpdGUSOmluZGlyZWN0LXdhc2k6aW8vc3RyZWFtc0AwLjIuMy1bbWV0aG9kXW91dHB1dC1zdHJlYW0ud3JpdGUTQ2luZGlyZWN0LXdhc2k6aW8vc3RyZWFtc0AwLjIuMy1bbWV0aG9kXW91dHB1dC1zdHJlYW0uYmxvY2tpbmctZmx1c2gUTWluZGlyZWN0LXdhc2k6aW8vc3RyZWFtc0AwLjIuMy1bbWV0aG9kXW91dHB1dC1zdHJlYW0uYmxvY2tpbmctd3JpdGUtYW5kLWZsdXNoFSBpbmRpcmVjdC13YXNpOmlvL3BvbGxAMC4yLjMtcG9sbBYyaW5kaXJlY3Qtd2FzaTpyYW5kb20vcmFuZG9tQDAuMi4zLWdldC1yYW5kb20tYnl0ZXMXN2luZGlyZWN0LXdhc2k6ZmlsZXN5c3RlbS9wcmVvcGVuc0AwLjIuMi1nZXQtZGlyZWN0b3JpZXM');
+    const module3 = base64Compile('AGFzbQEAAAABRAxgAn9/AGADf35/AX9gBH9/f38Bf2AAAX9gAn9/AX9gAX8AYAF/AGACf38AYAN/fn8AYAR/f39/AGADf39/AGACfn8AApYBGQABMAAAAAExAAEAATIAAgABMwACAAE0AAMAATUABAABNgAEAAE3AAQAATgABQABOQAGAAIxMAAGAAIxMQAHAAIxMgAIAAIxMwAIAAIxNAAHAAIxNQAHAAIxNgAHAAIxNwAHAAIxOAAJAAIxOQAHAAIyMAAJAAIyMQAKAAIyMgALAAIyMwAGAAgkaW1wb3J0cwFwARgYCR4BAEEACxgAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcALwlwcm9kdWNlcnMBDHByb2Nlc3NlZC1ieQENd2l0LWNvbXBvbmVudAcwLjIyNy4xABwEbmFtZQAVFHdpdC1jb21wb25lbnQ6Zml4dXBz');
     ({ exports: exports0 } = yield instantiateCore(yield module2));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
+      $root: {
+        log: exports0['0'],
+      },
       wasi_snapshot_preview1: {
-        clock_time_get: exports0['0'],
-        environ_get: exports0['5'],
-        environ_sizes_get: exports0['6'],
-        fd_write: exports0['1'],
-        poll_oneoff: exports0['2'],
-        proc_exit: exports0['7'],
-        random_get: exports0['4'],
-        sched_yield: exports0['3'],
+        clock_time_get: exports0['1'],
+        environ_get: exports0['6'],
+        environ_sizes_get: exports0['7'],
+        fd_write: exports0['2'],
+        poll_oneoff: exports0['3'],
+        proc_exit: exports0['8'],
+        random_get: exports0['5'],
+        sched_yield: exports0['4'],
       },
     }));
     ({ exports: exports2 } = yield instantiateCore(yield module1, {
@@ -3046,7 +3067,7 @@ export const $init = (() => {
         memory: exports1.memory,
       },
       'wasi:cli/environment@0.2.3': {
-        'get-environment': exports0['8'],
+        'get-environment': exports0['9'],
       },
       'wasi:cli/exit@0.2.3': {
         exit: trampoline13,
@@ -3066,39 +3087,39 @@ export const $init = (() => {
         'subscribe-instant': trampoline8,
       },
       'wasi:clocks/wall-clock@0.2.3': {
-        now: exports0['9'],
+        now: exports0['10'],
       },
       'wasi:filesystem/preopens@0.2.2': {
-        'get-directories': exports0['22'],
+        'get-directories': exports0['23'],
       },
       'wasi:filesystem/types@0.2.3': {
-        '[method]descriptor.append-via-stream': exports0['13'],
-        '[method]descriptor.get-type': exports0['14'],
-        '[method]descriptor.read-via-stream': exports0['11'],
-        '[method]descriptor.stat': exports0['15'],
-        '[method]descriptor.write-via-stream': exports0['12'],
+        '[method]descriptor.append-via-stream': exports0['14'],
+        '[method]descriptor.get-type': exports0['15'],
+        '[method]descriptor.read-via-stream': exports0['12'],
+        '[method]descriptor.stat': exports0['16'],
+        '[method]descriptor.write-via-stream': exports0['13'],
         '[resource-drop]descriptor': trampoline1,
-        'filesystem-error-code': exports0['10'],
+        'filesystem-error-code': exports0['11'],
       },
       'wasi:io/error@0.2.3': {
         '[resource-drop]error': trampoline3,
       },
       'wasi:io/poll@0.2.3': {
         '[resource-drop]pollable': trampoline9,
-        poll: exports0['20'],
+        poll: exports0['21'],
       },
       'wasi:io/streams@0.2.3': {
         '[method]input-stream.subscribe': trampoline5,
-        '[method]output-stream.blocking-flush': exports0['18'],
-        '[method]output-stream.blocking-write-and-flush': exports0['19'],
-        '[method]output-stream.check-write': exports0['16'],
+        '[method]output-stream.blocking-flush': exports0['19'],
+        '[method]output-stream.blocking-write-and-flush': exports0['20'],
+        '[method]output-stream.check-write': exports0['17'],
         '[method]output-stream.subscribe': trampoline6,
-        '[method]output-stream.write': exports0['17'],
+        '[method]output-stream.write': exports0['18'],
         '[resource-drop]input-stream': trampoline4,
         '[resource-drop]output-stream': trampoline2,
       },
       'wasi:random/random@0.2.3': {
-        'get-random-bytes': exports0['21'],
+        'get-random-bytes': exports0['22'],
       },
     }));
     memory0 = exports1.memory;
@@ -3106,8 +3127,8 @@ export const $init = (() => {
     ({ exports: exports3 } = yield instantiateCore(yield module3, {
       '': {
         $imports: exports0.$imports,
-        '0': exports2.clock_time_get,
-        '1': exports2.fd_write,
+        '0': trampoline14,
+        '1': exports2.clock_time_get,
         '10': trampoline16,
         '11': trampoline17,
         '12': trampoline18,
@@ -3118,16 +3139,17 @@ export const $init = (() => {
         '17': trampoline23,
         '18': trampoline24,
         '19': trampoline25,
-        '2': exports2.poll_oneoff,
+        '2': exports2.fd_write,
         '20': trampoline26,
         '21': trampoline27,
         '22': trampoline28,
-        '3': exports2.sched_yield,
-        '4': exports2.random_get,
-        '5': exports2.environ_get,
-        '6': exports2.environ_sizes_get,
-        '7': exports2.proc_exit,
-        '8': trampoline14,
+        '23': trampoline29,
+        '3': exports2.poll_oneoff,
+        '4': exports2.sched_yield,
+        '5': exports2.random_get,
+        '6': exports2.environ_get,
+        '7': exports2.environ_sizes_get,
+        '8': exports2.proc_exit,
         '9': trampoline15,
       },
     }));

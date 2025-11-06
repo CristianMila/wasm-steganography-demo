@@ -62,7 +62,7 @@ app.MapPost("/decode", async (HttpRequest request, SteganographyWasmModule stega
 	"image/bmp" => await steganographyModule.DecodeFromBmp(imageBytes),
 	"image/jpeg" or "image/jpg" => await steganographyModule.DecodeFromJpeg(imageBytes),
 	_ => throw new InvalidOperationException("Unsupported image mime type. Supported types: image/bmp, image/jpeg, image/jpg.")
-	};
+    };
 
     return Results.Ok(decodedSecret);
 }).Accepts<byte[]>("image/bmp", "image/jpeg", "image/jpg");

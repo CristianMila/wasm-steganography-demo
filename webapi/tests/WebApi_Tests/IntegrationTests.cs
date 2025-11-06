@@ -5,13 +5,6 @@ namespace WebApi_Tests;
 
 public class IntegrationTests
 {
-    private ITestOutputHelper OutputHelper { get; }
-
-    public IntegrationTests(ITestOutputHelper testOutputHelper)
-    {
-	OutputHelper = testOutputHelper;
-    }
-
     [Fact]
     public async Task EncodeSecretIntoBmp_ValidBmp_ReturnsEncodedByteArray()
     {
@@ -94,7 +87,6 @@ public class IntegrationTests
 	var alreadyEncodedJpeg = File.ReadAllBytes("Data/test-encoded.jpg");
 	var answeredEncodedJpeg = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
-	// OutputHelper.WriteLine($"Already encoded JPEG size: {alreadyEncodedJpeg.Length}. Bytes: {alreadyEncodedJpeg:X}");
 	Assert.Equivalent(alreadyEncodedJpeg, answeredEncodedJpeg);
     }
 

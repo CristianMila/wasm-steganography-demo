@@ -28,6 +28,10 @@ public class SteganographyWasmModule : IDisposable
 
         var module = Module.FromFile(engine, modulePath);
         linker.DefineFunction("local:steganography", "log", (string? message) => Console.WriteLine($"[WASM]: {message}"));
+        linker.DefineFunction("$root", "log", (int ptr, int len) => {
+	    // var message = memory.ReadString(ptr, len);
+	    throw new Exception($"log call: ptr={ptr}, len={len}");
+	});
 
         _instance = linker.Instantiate(_store, module);
         _memory = _instance.GetMemory("memory")

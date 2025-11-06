@@ -4,15 +4,24 @@ extern crate alloc;
 
 use std::io::Cursor;
 use image::{ImageReader, Rgb};
-use zune_image::{codecs::qoi::zune_core::options::DecoderOptions, traits::StegoEncoder};
+use zune_image::{traits::StegoEncoder};
 pub use bindings::Guest;
+use zune_jpeg::zune_core::options::DecoderOptions;
 
 bindings::export!(Steganography with_types_in bindings);
+
+fn set_panic_hook() {
+    std::panic::set_hook(Box::new(|info| {
+        bindings::log(format!("Panic occurred: {}", info).as_str());
+    }));
+}
 
 pub struct Steganography;
 
 impl Guest for Steganography {
     fn encode_secret_into_jpeg(secret: String, image: Vec<u8>) -> Vec<u8> {
+        set_panic_hook();
+
         let mut zune_jpeg_encoder = zune_image::codecs::jpeg::JpegEncoder::new();
         let loaded_img = zune_image::image::Image::read(image, DecoderOptions::default()).expect("failed to load image");
         let encoded_image = zune_jpeg_encoder.encode_with_secret(
@@ -24,12 +33,16 @@ impl Guest for Steganography {
     }
 
     fn decode_secret_from_jpeg(image: Vec<u8>) -> String {
-        let decoded_img = zune_image::codecs::jpeg::JpegDecoder::new(image.as_slice());
+        set_panic_hook();
+
+        let decoded_img = image::codecs::jpeg::JpegDecoder::new(Cursor::new(&image)).expect("failed to decode the jpg file");
 
         decoded_img.get_secret().expect("error extracting the secret")
     }
 
     fn encode_secret_into_bmp(secret: String, image: Vec<u8>) -> Vec<u8> {
+        set_panic_hook();
+
         let cloned_image = image.to_vec();
         let image = ImageReader::new(Cursor::new(&cloned_image)).with_guessed_format().unwrap().decode().unwrap();
         let image::DynamicImage::ImageRgb8(mut img_buf) = image else {
@@ -67,6 +80,8 @@ impl Guest for Steganography {
     }
 
     fn decode_secret_from_bmp(image: Vec <u8>) -> String {
+        set_panic_hook();
+
         let image = ImageReader::new(Cursor::new(&image)).with_guessed_format().unwrap().decode().unwrap();
         let image::DynamicImage::ImageRgb8(img_buf) = image else {
             panic!("Image format not supported. Only BMP with 24bits of depth at the moment.")

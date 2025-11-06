@@ -15,12 +15,16 @@ symbol-namepsace = "bindings"
 
 [dependencies]
 bitstream-io = "4.9.0"
-image = { path = "vendor/image" }
-zune-image = { path = "vendor/image/vendor/zune-image-0.4.15" }
-panic-halt = "1.0.0"
+image = { path = "vendor/image", default-features = false, features = ["rayon", "bmp", "jpeg"] }
+zune-image = { path = "vendor/image/vendor/zune-image-0.4.15", default-features = false, features = ["metadata","simd", "jpeg"] }
 wit-bindgen = "0.46.0"
 wit-bindgen-rt = { version = "0.44.0", default-features = false, features = ["bitflags"] }
 zune-jpeg = { path = "vendor/image/vendor/zune-jpeg-0.4.13" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
 
 [patch.crates-io]
 zune-core = { path = "vendor/image/vendor/zune-core-0.4.12" }
