@@ -42,8 +42,8 @@ fn main() -> anyhow::Result<()> {
             let file_type = input_file.path().extension().and_then(|s| s.to_str()).expect("unknown file extension").to_lowercase();
             let image_bytes = fs::read(InputPath::path(&input_file).path()).with_context(|| format!("Failed reading file: {}", &output_file.path()))?;
             let encoded_image = match file_type.as_str() {
-                "bmp" => steg.call_encode_secret_into_bmp(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?,
-                "jpg" | "jpeg" => steg.call_encode_secret_into_jpeg(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?,
+                "bmp" => steg.call_encode_secret_into_bmp(&mut store, &secret.to_owned(), &image_bytes).expect("Failed call to wasm method."),
+                "jpg" | "jpeg" => steg.call_encode_secret_into_jpeg(&mut store, &secret.to_owned(), &image_bytes).expect("Failed call to wasm method."),
                 _ => panic!("unsupported file type: {}", file_type),
             };
             fs::write(OutputPath::path(&output_file).path(), &encoded_image).with_context(|| format!("Failed writing file: {}", &output_file.path()))?;
