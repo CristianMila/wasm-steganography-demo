@@ -39,13 +39,23 @@ fn main() -> anyhow::Result<()> {
 
     match args.command {
         Command::Encode { secret, input_file, output_file } => {
+            let file_type = input_file.path().extension().and_then(|s| s.to_str()).expect("unknown file extension").to_lowercase();
             let image_bytes = fs::read(InputPath::path(&input_file).path()).with_context(|| format!("Failed reading file: {}", &output_file.path()))?;
-            let encoded_image = steg.call_encode_secret_into_bmp(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?;
+            let encoded_image = match file_type.as_str() {
+                "bmp" => steg.call_encode_secret_into_bmp(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?,
+                "jpg" | "jpeg" => steg.call_encode_secret_into_jpeg(&mut store, &secret.to_owned(), &image_bytes).with_context(|| format!("Failed call to wasm method."))?,
+                _ => panic!("unsupported file type: {}", file_type),
+            };
             fs::write(OutputPath::path(&output_file).path(), &encoded_image).with_context(|| format!("Failed writing file: {}", &output_file.path()))?;
         },
         Command::Decode { input_file } => {
+            let file_type = input_file.path().extension().and_then(|s| s.to_str()).expect("unknown file extension").to_lowercase();
             let image_bytes = fs::read(InputPath::path(&input_file).path()).with_context(|| format!("Failed reading file: {}", &input_file.path()))?;
-            let secret_decoded = steg.call_decode_secret_from_bmp(&mut store, &image_bytes)?;
+            let secret_decoded = match file_type.as_str() {
+                "bmp" => steg.call_decode_secret_from_bmp(&mut store, &image_bytes)?,
+                "jpg" | "jpeg" => steg.call_decode_secret_from_jpeg(&mut store, &image_bytes)?,
+                _ => panic!("unsupported file type: {}", file_type),
+            };
 
             println!("{}", secret_decoded);
         }

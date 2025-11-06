@@ -35,7 +35,7 @@ jobs:
       # - name: Clippy
       #   run: cargo clippy
       - name: Run tests
-        run: cargo test --test steganography_test --target x86_64-unknown-linux-gnu
+        run: cargo test --test steganography --target x86_64-unknown-linux-gnu
       - name: Build module
         run: cargo build --target wasm32-wasip1 --release --target-dir ${{ env.ARTIFACTS }}/wasm-module
       - name: Build component
