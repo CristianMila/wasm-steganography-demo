@@ -1,8 +1,5 @@
 use wasm_steganography::Steganography;
 use wasm_steganography::Guest;
-use zune_image::codecs::qoi::zune_core;
-use std::io::Cursor;
-use zune_image::traits::StegoEncoder;
 
 const SECRET: &str = "foo";
 
@@ -35,25 +32,14 @@ fn decode_secret_bmp_without_secret_panics() {
 
 #[test]
 fn decode_jpg_should_succeed() {
-    let image = zune_image::image::Image::open("tests/data/test.jpeg").unwrap();
-    let (width, height) = image.dimensions();
-    let options = zune_core::options::EncoderOptions::new(width / 2, height / 2, zune_core::colorspace::ColorSpace::RGB, zune_core::bit_depth::BitDepth::Eight);
-    options.set_quality(95);
-    let mut zune_jpeg_encoder = zune_image::codecs::jpeg::JpegEncoder::new_with_options(options);
-    let res = zune_jpeg_encoder.encode_with_secret(
-        &image,
-        SECRET.as_ref(),
-    ).expect("failed to encode image as jpg with zune");
+    let image = std::fs::read("tests/data/test.jpeg").unwrap();
+    let res = Steganography::encode_secret_into_jpeg(
+        SECRET.to_string(),
+        image,
+    );
 
     assert!(res.is_empty() == false);
 
-    std::fs::write("test-encoded-zune.jpg", &res).expect("failed to write the encoded image to disk");
-
-    let decoded_image: Cursor<Vec<u8>> = Cursor::new(res);
-    let decoder = image::codecs::jpeg::JpegDecoder::new(decoded_image).expect("error decoding the previously encoded steg image");
-    let Some(secret) = decoder.get_secret() else {
-        panic!("no secret was found")
-    };
-    
+    let secret = Steganography::decode_secret_from_jpeg(res);    
     assert_eq!(secret, SECRET.to_string());
 }

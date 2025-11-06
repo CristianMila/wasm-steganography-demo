@@ -11,9 +11,14 @@ use zune_jpeg::zune_core::options::DecoderOptions;
 bindings::export!(Steganography with_types_in bindings);
 
 fn set_panic_hook() {
-    std::panic::set_hook(Box::new(|info| {
-        bindings::log(format!("Panic occurred: {}", info).as_str());
-    }));
+    // During integration tests, the wasm import log function is not 
+    // satisfied and breaks during execution. We don't need it during tests
+    // anyway, so it's a noop if that's the case.
+    if std::env::var("RUNNING_TESTS").is_err() {
+        std::panic::set_hook(Box::new(|info| {
+            bindings::log(format!("Panic occurred: {}", info).as_str());
+        }));
+    }
 }
 
 pub struct Steganography;
